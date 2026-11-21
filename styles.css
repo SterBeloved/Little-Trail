@@ -4,3 +4,19 @@
 @media(max-width:720px){.topbar{padding:15px 18px;gap:12px}.brand{font-size:26px}.toplinks{font-size:10px;gap:14px}.toplinks small{font-size:10px}main{padding:0 14px}.intro{padding:19px 4px 17px}.intro h1{font-size:29px}.intro-zh{font-size:13px;margin-top:5px}.form-side{padding:18px 16px 0}.steps{gap:7px;margin-bottom:20px;padding-bottom:14px}.steps button{gap:7px;min-height:44px}.steps b{width:23px;height:23px}.steps span{font-size:11px}.steps small{font-size:10px}.step-panel h2{font-size:26px}.section-zh{font-size:12px;margin-top:4px;margin-bottom:18px}.row{grid-template-columns:1fr;gap:0}.row .field{margin-top:0;margin-bottom:18px}.row+.field{margin-top:0}.field{margin:18px 0}label,legend{font-size:14px}label small,legend small{font-size:12px}.choice-row{gap:10px}.choice{padding:12px 10px}.effort-grid{grid-template-columns:1fr;gap:8px}.effort-card{min-height:53px;padding:9px 12px 9px 39px;display:grid;grid-template-columns:25px 1fr 1fr;align-items:center;gap:11px;text-align:left;margin:0}.effort-card input{width:17px;height:17px;left:11px;top:17px}.effort-card b{font-size:25px;margin:0}.effort-card span{font-size:12px;min-height:0}.effort-card small{font-size:12px;margin:0;text-align:right}.form-footer{position:sticky;bottom:0;z-index:2;background:var(--paper);margin:24px -16px 0;padding:13px 16px;border-top:1px solid #c4cfba;box-shadow:0 -7px 15px #33463b04;gap:8px}.primary{font-size:13px;min-height:52px;padding:10px 16px}.primary small{font-size:11px}#step-count{font-size:8px}.connection-note{display:block;padding:14px 3px}.connection-note button{margin-top:10px}.run-panel,.result-panel{padding:22px 17px}.result-heading h2,.run-panel h2{font-size:29px}.result-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}.result-actions button{padding:9px}.plan-section p{font-size:14px}.result-nav{gap:6px}.result-nav a{font-size:11px;padding:8px 10px}.result-reminder{margin:19px 0}footer{padding:19px 4px;margin-top:22px}footer>span:last-child{font-size:8px;max-width:none}.form-footer #back{min-width:54px}}
 @media(max-width:360px){.toplinks{gap:9px;font-size:9px}.intro h1{font-size:26px}.form-side{padding-left:13px;padding-right:13px}.form-footer{margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}.steps button{gap:5px}.steps span{font-size:10px}.steps small{font-size:9px}.effort-card{gap:7px}.effort-card span{font-size:11px}.effort-card small{font-size:11px}}
 @media print{.form-footer{position:static}.result-panel{padding:0;margin:0}.plan-section p{font-size:10px}}
+
+/* Small feedback entry follows the generated plan typography. */
+.plan-feedback{margin:24px 0 18px;font:inherit;font-size:13px;line-height:1.7}
+.plan-feedback summary{cursor:pointer;list-style:none;display:inline-block}
+.plan-feedback summary::-webkit-details-marker{display:none}
+.plan-feedback summary span{display:block}
+.plan-feedback summary:hover{text-decoration:underline;text-underline-offset:3px}
+.plan-feedback form{margin-top:20px;max-width:520px}
+.plan-feedback label{font-size:13px;margin:14px 0 6px}
+.plan-feedback label small{font-family:inherit;font-size:12px}
+.plan-feedback select{width:100%;font:inherit;background:#faf9f2;color:var(--ink);border:1px solid #cfd6c6;border-radius:3px;padding:12px;min-height:46px}
+.plan-feedback textarea,.plan-feedback input{font:inherit;min-height:46px}
+.plan-feedback .feedback-note,.plan-feedback [role=status]{font-size:12px;margin-top:12px}
+.plan-feedback button{border:1px solid #c5cebc;border-radius:3px;min-height:44px;padding:9px 15px;margin-top:14px;text-align:left}
+.plan-feedback button:hover{background:var(--sage)}
+@media print{.plan-feedback{display:none!important}}
