@@ -13,7 +13,7 @@ This code needs a one-time Cloudflare D1 binding and private dashboard password 
 5. Under variables and secrets, create **ADMIN_PASSWORD** as a **Secret**. Set a unique random password of at least 24 characters yourself. Never put it in GitHub, a URL, or chat. The private dashboard username is **admin**.
 6. Add a text variable **WORKFLOW_VERSION**, initially `workflow-20261122-preparation`. This is your own release label; change it after publishing a Dify workflow revision. Dify's public completion event does not provide a reliable published release number.
 7. Replace the Worker's code with the complete `backend/worker.js` file and deploy. It is a standalone ES module; no other imports are needed. Preserve existing bindings and secrets when using the editor.
-8. Visit `https://little-trail-api.shianqi1116.workers.dev/admin`. Enter username **admin** and the password you set. This page and its data/CSV endpoints all require authentication. If no password is configured, they return 503 rather than displaying data publicly.
+8. Visit `https://little-trail-api.shianqi1116.workers.dev/admin`. The matching mobile-friendly login card uses username **admin** and the password you set. A successful login lasts eight hours; use Sign out to clear the session. The public site footer also has an Admin / 管理入口 link. This page and its data/CSV endpoints all require authentication. If no password is configured, they return 503 rather than displaying data publicly.
 9. Refresh the GitHub Pages frontend, fill a sample, and generate once. Check the new record in `/admin`, then use its `run_id` to match any Formspree feedback.
 
 If using Wrangler instead, fill in the actual D1 database ID in `wrangler.jsonc` before deploying. Do not deploy with its placeholder. Create the secret interactively with `npx wrangler secret put ADMIN_PASSWORD`, execute `schema.sql` against the remote D1 database, and ensure `DIFY_API_KEY` is already set for `little-trail-api`.
@@ -52,3 +52,7 @@ Cloudflare keeps deployment history. If the updated Worker causes problems, roll
 
 - https://developers.cloudflare.com/d1/worker-api/prepared-statements/
 - https://developers.cloudflare.com/workers/runtime-apis/streams/
+
+## Login design update
+
+Deploy the latest worker.js to replace the old browser password popup with the Little Trail login card. Keep the same ADMIN_PASSWORD and database; no schema migration or new settings are required. Sessions use signed Secure, HttpOnly, SameSite=Strict cookies. Login requests are rate limited.

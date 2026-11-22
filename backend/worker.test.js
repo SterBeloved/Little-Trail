@@ -12,7 +12,6 @@ function setup(){const db=new DatabaseSync(':memory:');db.exec(readFileSync(new 
  return {db,env:{STATS_DB:adapter,DIFY_API_KEY:'test-only',ALLOWED_ORIGINS:origin,PLANNER_LIMITER:{limit:async()=>({success:true})},WORKFLOW_VERSION:'test-v1',ADMIN_PASSWORD:'test-only-password-at-least-24-characters'},ctx,async drain(){while(pending.length)await Promise.all(pending.splice(0))}};
 }
 const req=(path,body,headers={})=>new Request('https://test.invalid'+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
-const auth=env=>({Authorization:'Basic '+btoa('admin:'+env.ADMIN_PASSWORD)});
 function mockUpstream(t,text){const old=globalThis.fetch;globalThis.fetch=async()=>new Response(text,{headers:{'Content-Type':'text/event-stream'}});t.after(()=>{globalThis.fetch=old})}
 const end='data: '+JSON.stringify({event:'workflow_finished',data:{id:'workflow-test-id',status:'succeeded',elapsed_time:12.5,total_tokens:1234,outputs:{travel_plan:'PRIVATE PLAN'}}})+'\n\n';
 test('SSE inspection handles split UTF-8, CRLF, comments and ignores node data',()=>{
@@ -42,14 +41,19 @@ test('upstream failures are recorded with a generic code',async t=>{
 test('statistics failure does not break generation',async t=>{
  const s=setup();s.env.STATS_DB={prepare(){throw Error('database unavailable')}};mockUpstream(t,end);const res=await worker.fetch(req('/run',{user,inputs}),s.env,s.ctx);assert.equal(res.status,200);assert.equal(res.headers.get('X-Run-Receipt'),null);assert.equal(await res.text(),end);
 });
-test('private pages fail closed and require password on every data/export request',async()=>{
- const s=setup();for(const p of ['/admin','/admin/data','/admin/export']){
-  const no=await worker.fetch(new Request('https://test.invalid'+p),s.env,s.ctx);assert.equal(no.status,401);
-  const wrong=await worker.fetch(new Request('https://test.invalid'+p,{headers:{Authorization:'Basic '+btoa('admin:wrong')}}),s.env,s.ctx);assert.equal(wrong.status,401);
- }
+test('styled login protects data and issues revocable sessions',async()=>{
+ const s=setup();const call=(p,headers={})=>worker.fetch(new Request('https://test.invalid'+p,{headers}),s.env,s.ctx);
+ const page=await call('/admin');assert.equal(page.status,200);assert.equal(page.headers.get('WWW-Authenticate'),null);assert.match(await page.text(),/login-card/);
+ for(const p of ['/admin/data','/admin/export'])assert.equal((await call(p)).status,401);
+ const login=(password,Origin='https://test.invalid')=>worker.fetch(new Request('https://test.invalid/admin/login',{method:'POST',headers:{Origin,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:'admin',password})}),s.env,s.ctx);
+ assert.equal((await login('wrong')).status,401);assert.equal((await login(s.env.ADMIN_PASSWORD,'https://wrong.invalid')).status,403);
+ const signed=await login(s.env.ADMIN_PASSWORD);assert.equal(signed.status,303);const cookie=signed.headers.get('Set-Cookie');for(const flag of ['Secure','HttpOnly','SameSite=Strict','Max-Age=28800'])assert.ok(cookie.includes(flag));const headers={Cookie:cookie.split(';')[0]};
+ const yes=await call('/admin/data',headers);assert.equal(yes.status,200);assert.deepEqual((await yes.json()).rows,[]);
+ assert.equal((await call('/admin/data?version=%27%20OR%201=1',headers)).status,400);
+ assert.equal((await call('/admin/data',{Cookie:headers.Cookie+'broken'})).status,401);
+ const logout=await worker.fetch(new Request('https://test.invalid/admin/logout',{method:'POST',headers:{Origin:'https://test.invalid',...headers}}),s.env,s.ctx);assert.equal(logout.status,303);assert.match(logout.headers.get('Set-Cookie'),/Max-Age=0/);
+ s.env.ADMIN_PASSWORD+='rotated';assert.equal((await call('/admin/data',headers)).status,401);
  assert.equal((await worker.fetch(new Request('https://test.invalid/admin'),{...s.env,ADMIN_PASSWORD:undefined},s.ctx)).status,503);
- const yes=await worker.fetch(new Request('https://test.invalid/admin/data',{headers:auth(s.env)}),s.env,s.ctx);assert.equal(yes.status,200);const data=await yes.json();assert.equal(data.summary.success_rate,null);assert.deepEqual(data.rows,[]);
- const bad=await worker.fetch(new Request('https://test.invalid/admin/data?version=%27%20OR%201=1',{headers:auth(s.env)}),s.env,s.ctx);assert.equal(bad.status,400);
 });
 test('summary keeps missing values distinct from zero and uses finished runs',()=>{
  const r=summarise([{status:'succeeded',dify_seconds:10,total_tokens:0,client_wait_ms:12000,client_outcome:'result_ready'},{status:'succeeded',dify_seconds:20,total_tokens:100,client_wait_ms:null},{status:'failed',dify_seconds:null,total_tokens:null,client_wait_ms:1000},{status:'running',dify_seconds:null,total_tokens:null,client_wait_ms:null}]);assert.equal(r.success_rate,2/3);assert.equal(r.median_dify_seconds,15);assert.equal(r.median_client_seconds,12);assert.equal(r.token_samples,2);assert.equal(r.total_tokens,100);
