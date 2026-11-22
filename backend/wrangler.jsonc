@@ -1,13 +1,19 @@
 {
-  "name": "little-trail-proxy",
+  "name": "little-trail-api",
   "main": "worker.js",
   "compatibility_date": "2026-11-21",
   "vars": {
-    "ALLOWED_ORIGINS": "https://YOUR-USERNAME.github.io"
+    "ALLOWED_ORIGINS": "https://sterbeloved.github.io",
+    "WORKFLOW_VERSION": "workflow-20261122-preparation"
   },
   "ratelimits": [{
     "name": "PLANNER_LIMITER",
     "namespace_id": "1001",
-    "simple": { "limit": 5, "period": 60 }
+    "simple": {"limit": 5, "period": 60}
+  }],
+  "d1_databases": [{
+    "binding": "STATS_DB",
+    "database_name": "little-trail-stats",
+    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
   }]
 }
